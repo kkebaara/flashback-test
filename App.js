@@ -2,21 +2,20 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
-  Text,
   Dimensions,
   Image,
+  TouchableWithoutFeedback,
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
 const PLAYER_WIDTH = 50;
 const PLAYER_HEIGHT = 50;
-const BG_WIDTH = 2000; // width of the background image
-const BG_HEIGHT = 500; // height of the background image
+const BG_WIDTH = 2000;
+const BG_HEIGHT = 500;
 
 export default function App() {
-  const [playerX, setPlayerX] = useState(0); // player's horizontal position
+  const [playerX, setPlayerX] = useState(0);
 
   const movePlayer = (dir) => {
     setPlayerX((prevX) => {
@@ -26,44 +25,45 @@ export default function App() {
     });
   };
 
+  const handleTouch = (event) => {
+    const touchX = event.nativeEvent.locationX;
+    if (touchX < width / 2) {
+      movePlayer("left");
+    } else {
+      movePlayer("right");
+    }
+  };
+
   const backgroundX = -playerX;
 
   return (
-    <View style={styles.container}>
-      {/* Background image */}
-      <Image
-        source={require("./assets/background.png")}
-        style={[
-          styles.background,
-          {
-            left: backgroundX,
-          },
-        ]}
-        resizeMode="cover"
-      />
+    <TouchableWithoutFeedback onPress={handleTouch}>
+      <View style={styles.container}>
+        {/* Background image */}
+        <Image
+          source={require("./assets/background.png")}
+          style={[
+            styles.background,
+            {
+              left: backgroundX,
+            },
+          ]}
+          resizeMode="cover"
+        />
 
-      {/* Player sprite (centered horizontally) */}
-      <Image
-        source={require("./assets/character.png")}
-        style={[
-          styles.player,
-          {
-            left: width / 2 - PLAYER_WIDTH / 2,
-          },
-        ]}
-        resizeMode="contain"
-      />
-
-      {/* Control buttons */}
-      <View style={styles.controls}>
-        <TouchableOpacity onPress={() => movePlayer("left")} style={styles.button}>
-          <Text style={styles.text}>←</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => movePlayer("right")} style={styles.button}>
-          <Text style={styles.text}>→</Text>
-        </TouchableOpacity>
+        {/* Player sprite */}
+        <Image
+          source={require("./assets/character.png")}
+          style={[
+            styles.player,
+            {
+              left: width / 2 - PLAYER_WIDTH / 2,
+            },
+          ]}
+          resizeMode="contain"
+        />
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -84,23 +84,5 @@ const styles = StyleSheet.create({
     bottom: 80,
     width: PLAYER_WIDTH,
     height: PLAYER_HEIGHT,
-  },
-  controls: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 20,
-    backgroundColor: "#111",
-  },
-  button: {
-    padding: 20,
-    backgroundColor: "#333",
-    borderRadius: 8,
-  },
-  text: {
-    color: "#fff",
-    fontSize: 24,
   },
 });
