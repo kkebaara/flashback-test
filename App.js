@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -11,11 +11,38 @@ const { width, height } = Dimensions.get("window");
 
 const PLAYER_WIDTH = 50;
 const PLAYER_HEIGHT = 50;
+const GROUND_Y = height - PLAYER_HEIGHT - 80;
+const GRAVITY = 4;
+const JUMP_FORCE = 60;
 const BG_WIDTH = 2000;
 const BG_HEIGHT = 500;
 
 export default function App() {
   const [playerX, setPlayerX] = useState(0);
+  const [playerY, setPlayerY] = useState(GROUND_Y);
+  const [velocityY, setVelocityY] = useState(0);
+  const jumpingRef = useRef(false);
+
+  // Gravity system
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlayerY((prevY) => {
+        let newY = prevY - velocityY;
+        let newVelocityY = velocityY - GRAVITY;
+
+        if (newY >= GROUND_Y) {
+          newY = GROUND_Y;
+          newVelocityY = 0;
+          jumpingRef.current = false;
+        }
+
+        setVelocityY(newVelocityY);
+        return newY;
+      });
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [velocityY]);
 
   const movePlayer = (dir) => {
     setPlayerX((prevX) => {
@@ -27,10 +54,17 @@ export default function App() {
 
   const handleTouch = (event) => {
     const touchX = event.nativeEvent.locationX;
-    if (touchX < width / 2) {
-      movePlayer("left");
+    const touchY = event.nativeEvent.locationY;
+
+    if (touchY < height / 2 && !jumpingRef.current) {
+      setVelocityY(JUMP_FORCE);
+      jumpingRef.current = true;
     } else {
-      movePlayer("right");
+      if (touchX < width / 2) {
+        movePlayer("left");
+      } else {
+        movePlayer("right");
+      }
     }
   };
 
@@ -39,7 +73,7 @@ export default function App() {
   return (
     <TouchableWithoutFeedback onPress={handleTouch}>
       <View style={styles.container}>
-        {/* Background image */}
+        {/* Background */}
         <Image
           source={require("./assets/background.png")}
           style={[
@@ -51,13 +85,14 @@ export default function App() {
           resizeMode="cover"
         />
 
-        {/* Player sprite */}
+        {/* Player */}
         <Image
           source={require("./assets/character.png")}
           style={[
             styles.player,
             {
               left: width / 2 - PLAYER_WIDTH / 2,
+              top: playerY,
             },
           ]}
           resizeMode="contain"
@@ -81,7 +116,6 @@ const styles = StyleSheet.create({
   },
   player: {
     position: "absolute",
-    bottom: 80,
     width: PLAYER_WIDTH,
     height: PLAYER_HEIGHT,
   },
