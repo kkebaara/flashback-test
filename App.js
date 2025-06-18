@@ -48,3 +48,50 @@ export default function App() {
       <GameEngine
         style={styles.game}
         systems={[]}
+        entities={{
+          player: {
+            position: playerPos,
+            renderer: () => <Player position={playerPos} />,
+          },
+        }}
+      />
+      <View style={styles.controls}>
+        <TouchableOpacity onPress={() => movePlayer("left")} style={styles.button}>
+          <Text style={styles.text}>←</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => movePlayer("up")} style={styles.button}>
+          <Text style={styles.text}>↑</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => movePlayer("right")} style={styles.button}>
+          <Text style={styles.text}>→</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  game: {
+    flex: 1,
+    backgroundColor: "#222",
+  },
+  controls: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 20,
+    backgroundColor: "#111",
+  },
+  button: {
+    padding: 20,
+    backgroundColor: "#333",
+    borderRadius: 8,
+  },
+  text: {
+    color: "#fff",
+    fontSize: 24,
+  },
+});
