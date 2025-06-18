@@ -7,60 +7,57 @@ import {
   Dimensions,
   Image,
 } from "react-native";
-import { GameEngine } from "react-native-game-engine";
 
 const { width, height } = Dimensions.get("window");
+
 const PLAYER_WIDTH = 50;
 const PLAYER_HEIGHT = 50;
-
-const Player = ({ position }) => {
-  return (
-    <Image
-      source={require("./assets/character.png")}
-      style={{
-        width: PLAYER_WIDTH,
-        height: PLAYER_HEIGHT,
-        position: "absolute",
-        left: position.x,
-        top: position.y,
-      }}
-      resizeMode="contain"
-    />
-  );
-};
+const BG_WIDTH = 2000; // width of the background image
+const BG_HEIGHT = 500; // height of the background image
 
 export default function App() {
-  const [playerPos, setPlayerPos] = useState({ x: 100, y: height / 2 });
+  const [playerX, setPlayerX] = useState(0); // player's horizontal position
 
   const movePlayer = (dir) => {
-    setPlayerPos((pos) => {
-      let newX = pos.x + (dir === "left" ? -20 : dir === "right" ? 20 : 0);
-      let newY = pos.y + (dir === "up" ? -60 : 0); // simulate jump
-      return {
-        x: Math.max(0, Math.min(newX, width - PLAYER_WIDTH)),
-        y: Math.max(0, newY),
-      };
+    setPlayerX((prevX) => {
+      const delta = dir === "left" ? -20 : 20;
+      const newX = prevX + delta;
+      return Math.max(0, Math.min(newX, BG_WIDTH - width));
     });
   };
 
+  const backgroundX = -playerX;
+
   return (
     <View style={styles.container}>
-      <GameEngine
-        style={styles.game}
-        systems={[]}
-        entities={{
-          player: {
-            position: playerPos,
-            renderer: () => <Player position={playerPos} />,
+      {/* Background image */}
+      <Image
+        source={require("./assets/background.png")}
+        style={[
+          styles.background,
+          {
+            left: backgroundX,
           },
-        }}
+        ]}
+        resizeMode="cover"
       />
+
+      {/* Player sprite (centered horizontally) */}
+      <Image
+        source={require("./assets/character.png")}
+        style={[
+          styles.player,
+          {
+            left: width / 2 - PLAYER_WIDTH / 2,
+          },
+        ]}
+        resizeMode="contain"
+      />
+
+      {/* Control buttons */}
       <View style={styles.controls}>
         <TouchableOpacity onPress={() => movePlayer("left")} style={styles.button}>
           <Text style={styles.text}>←</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => movePlayer("up")} style={styles.button}>
-          <Text style={styles.text}>↑</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => movePlayer("right")} style={styles.button}>
           <Text style={styles.text}>→</Text>
@@ -74,12 +71,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
+    overflow: "hidden",
   },
-  game: {
-    flex: 1,
-    backgroundColor: "#222",
+  background: {
+    position: "absolute",
+    top: 0,
+    width: BG_WIDTH,
+    height: BG_HEIGHT,
+  },
+  player: {
+    position: "absolute",
+    bottom: 80,
+    width: PLAYER_WIDTH,
+    height: PLAYER_HEIGHT,
   },
   controls: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
     padding: 20,
